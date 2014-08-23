@@ -17,9 +17,37 @@
 import /init.qcom-common.rc
 
 on fs
+    #This will safely error out on non-lvm configs
+    restorecon /dev/mapper/lvpool-userdata
+
+    #this fstab was also copied by lvm_init.sh
     mount_all ./fstab.bacon
     restorecon_recursive /persist
     setprop ro.crypto.fuse_sdcard true
+
+on early-init
+# LVM: set up LVM volumes
+    #First wait for the physical volumes to be available.  Init appears to
+    #start before the MMC driver comes up and creates the block devices
+    wait /dev/block/platform/msm_sdcc.1/by-name/userdata
+    wait /dev/block/platform/msm_sdcc.1/by-name/sdcard
+    #Scan for LVM partitions.  Our lvm.conf restricts this to the userdata and sdcard partitions
+    exec /sbin/lvm vgscan --mknodes --ignorelockingfailure
+    #Activate any partitions found
+    exec /sbin/lvm vgchange -aly --ignorelockingfailure
+    #Detect if LVM is active and copy the appropriate fstabs and environment RCs for
+    #the detected configuration.  See the script source for details
+    #Requires busybox to be added to the initial ramdisk of the kernel,
+    #AOSP's toolbox+sh should also work
+    exec /sbin/busybox sh /lvm_init.sh
+
+on early-boot
+    #Last phase of LVM configuration. setprop requires property service
+    #to be started so we can't put it in lvm_init.sh or lvm_symlinks.sh
+    #Currently we're using the system shell as /system is mounted,
+    #but this may need to be reworked to use toolbox+sh to support
+    #recovery
+    exec /system/bin/logwrapper /system/bin/sh /lvm_setprop.sh
 
 on init
     # See storage config details at http://source.android.com/tech/storage/
@@ -39,6 +67,10 @@ on init
     symlink /storage/emulated/legacy /mnt/sdcard
     symlink /storage/emulated/legacy /storage/sdcard0
     symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+
+    #LVM stuff
+    export_rc init.fs.rc
+    exec /sbin/busybox sh /lvm_symlinks.sh
 
 on post-fs
     export_rc /system/etc/init.cne.rc

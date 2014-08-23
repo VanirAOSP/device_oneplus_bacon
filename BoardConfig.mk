@@ -49,7 +49,11 @@ BOARD_USERDATAEXTRAIMAGE_PARTITION_SIZE := 59914792960
 BOARD_USERDATAEXTRAIMAGE_PARTITION_NAME := 64G
 
 # Recovery
-TARGET_RECOVERY_FSTAB := device/oneplus/bacon/rootdir/etc/fstab.bacon
+#TODO: Need to determine just how this is used.  There's a slight
+#chance this could cause some small issues on LVM configs
+#but overall, TWRP doesn't use this and the rest of the build system
+#does
+TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/etc/fstab.bacon.std
 
 TARGET_OTA_ASSERT_DEVICE := bacon,A0001
 

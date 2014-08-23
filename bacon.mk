@@ -27,9 +27,14 @@ PRODUCT_CHARACTERISTICS := nosdcard
 # Ramdisk
 PRODUCT_PACKAGES += \
     libinit_bacon \
-    fstab.bacon \
+    fstab.bacon.lvm \
+    fstab.bacon.std \
     init.bacon.rc \
+    init.fs.rc.lvm \
+    init.fs.rc.std \
     init.qcom.usb.rc \
+    twrp.fstab.lvm \
+    twrp.fstab.std \
     ueventd.bacon.rc
 
 # Audio
