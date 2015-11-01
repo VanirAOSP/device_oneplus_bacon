@@ -1,5 +1,9 @@
 #!/bin/bash
 
+FP=$(cd ${0%/*} && pwd -P)
+export VENDOR=$(basename $(dirname $FP))
+export DEVICE=$(basename $FP)
+
 OUTDIR=vendor/$VENDOR/$DEVICE
 MAKEFILE=../../../$OUTDIR/$DEVICE-vendor-blobs.mk
 
@@ -95,8 +99,6 @@ DEVICE_PACKAGE_OVERLAYS += vendor/$VENDOR/$DEVICE/overlay
 
 PRODUCT_PACKAGES += \\
     com.qualcomm.location \\
-    PPPreference \\
-    QuickBoot \\
     qcrilmsgtunnel \\
     shutdownlistener
 
@@ -115,6 +117,17 @@ PRODUCT_PACKAGES += \\
     libwvdrm_L3 \\
     libwvm \\
     libWVStreamControlAPI_L3
+
+PRODUCT_PACKAGES += \\
+    libqmi \\
+    libmdmdetect \\
+    libqmiservices \\
+    libidl \\
+    libqcci_legacy \\
+    libdiag \\
+    libqmi_client_qmux \\
+    libdsutils \\
+#    libwpa_qmi_eap_proxy
 
 \$(call inherit-product, vendor/$VENDOR/$DEVICE/$DEVICE-vendor-blobs.mk)
 EOF
